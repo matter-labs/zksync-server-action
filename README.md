@@ -28,7 +28,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
 ```
@@ -37,7 +37,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS 
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: v0.8.2
     l1_port: 8545
@@ -48,7 +48,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     include_prerelease: true
@@ -115,7 +115,7 @@ Example with both inline printing and manual access to the paths:
 ```yaml
 - name: Run ZKsync OS
   id: zks
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     anvil_logs: true
@@ -132,7 +132,7 @@ Example with both inline printing and manual access to the paths:
 
 ### Support
 
-If you encounter issues not covered in the troubleshooting section, feel free to [open an issue](https://github.com/dutterbutter/zksync-server-action/issues) in the repository.
+If you encounter issues not covered in the troubleshooting section, feel free to [open an issue](https://github.com/matter-labs/zksync-server-action/issues) in the repository.
 
 ## Contributing 🤝
 
