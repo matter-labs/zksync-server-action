@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create (e.g. v0.8.3)"
+        required: true
+      target:
+        description: "Commit/branch to tag (default: main)"
+        required: false
+        default: "main"
+      name:
+        description: "Release title (defaults to tag)"
+        required: false
+      prerelease:
+        description: "Mark release as prerelease"
+        type: boolean
+        default: false
+      generate_notes:
+        description: "Auto-generate release notes"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Create or update the tag on the chosen commit/branch
+      - name: Create tag (if missing) and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag }}"
+          TARGET="${{ github.event.inputs.target }}"
+          # Create annotated tag locally if it doesn't exist
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists locally."
+          else
+            git tag -a "$TAG" -m "Release $TAG" "$TARGET"
+          fi
+          # Push the tag (idempotent if it already exists on origin)
+          git push origin "refs/tags/$TAG"
+
+      # Create the GitHub Release for that tag
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          target_commitish: ${{ github.event.inputs.target }}
+          name: ${{ github.event.inputs.name || github.event.inputs.tag }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: ${{ github.event.inputs.generate_notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
