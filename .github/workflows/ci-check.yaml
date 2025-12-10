@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   license-check:
-    name: license-check 📜
+    name: license-check
     runs-on: ubuntu-latest
 
     steps:
