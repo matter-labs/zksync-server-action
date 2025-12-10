@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Foundry (for Anvil)
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.3.4
+
+      - name: Run action (latest stable)
+        uses: ./
+        with:
+          version: latest
+
+      - name: Verify RPCs respond
+        run: |
+          set -euo pipefail
+          echo "ETH_RPC=$ETH_RPC"
+          echo "ZKSYNC_RPC=$ZKSYNC_RPC"
+          curl -sS -X POST "$ETH_RPC" \
+            -H 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' | tee /tmp/l1.out
+          curl -sS -X POST "$ZKSYNC_RPC" \
+            -H 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' | tee /tmp/l2.out
+          grep -q '"result"' /tmp/l1.out
+          grep -q '"result"' /tmp/l2.out
+
+      - name: Upload logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zks-logs
+          path: .zks/*.log
+          if-no-files-found: ignore
