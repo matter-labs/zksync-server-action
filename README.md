@@ -1,27 +1,29 @@
 # ZKsync Server Action (L1 + L2)
 
+Note: This repository is a successor to the original action, which can be found at [dutterbutter/zksync-server-action](https://github.com/dutterbutter/zksync-server-action).
+
 Start a local **L1 (Anvil)** and **L2 (zksync_os_server)** directly from official [`matter-labs/zksync-os-server`](https://github.com/matter-labs/zksync-os-server) release assets.
 
 ## Features
 
 - Downloads official binaries + state (`genesis.json`, `zkos-l1-state.json`)
 - Boots both **L1 (Anvil)** and **L2 (zksync_os_server)**
-- Exports `ETH_RPC` and `ZKSYNC_RPC` for your subsequent test steps
+- Exports `ETH_RPC`, `ZKSYNC_RPC`, and logs for your subsequent steps
 
 ## Quick Start
 
 ### Requirements
 
-* **Runner:** `ubuntu-latest` (Anvil requires Linux)
-* **Foundry:** must be available (to provide `anvil` binary)
+- **Runner:** `ubuntu-latest` (Anvil requires Linux)
+- **Foundry:** must be available (to provide `anvil` binary)
 
 Example setup:
 
 ```yaml
-- name: Setup Foundry
-  uses: foundry-rs/foundry-toolchain@v1
+- name: Install Foundry (anvil)
+  uses: foundry-rs/foundry-toolchain@50d5a8956f2e319df19e6b57539d7e2acb9f8c1e # v1.5
   with:
-    version: v1.4.1
+    version: v1.3.4
 ```
 
 ### **Minimal usage (latest stable)**
@@ -88,11 +90,11 @@ ZKSYNC_RPC=http://127.0.0.1:3050
 
 ## Troubleshooting
 
-* **Ports busy:** Adjust `l1_port` / `l2_port` if the runner already uses 8545 or 3050.
-* **Logs:**
+- **Ports busy:** Adjust `l1_port` / `l2_port` if the runner already uses 8545 or 3050.
+- **Logs:**
 
-  * `.zks/anvil.log` — Anvil output
-  * `.zks/zksyncos.log` — zksync-os-server output
+  - `.zks/anvil.log` — Anvil output
+  - `.zks/zksyncos.log` — zksync-os-server output
 
 Upload them on failure for debugging:
 
@@ -107,8 +109,8 @@ Upload them on failure for debugging:
 
 You have two ways to view logs:
 
-* Inline: set `anvil_logs: true` / `zksync_logs: true` and the action will print them in the job output.
-* Manual: skip the inputs and use the exposed output paths to `cat` (or upload) the files yourself.
+- Inline: set `anvil_logs: true` / `zksync_logs: true` and the action will print them in the job output.
+- Manual: skip the inputs and use the exposed output paths to `cat` (or upload) the files yourself.
 
 Example with both inline printing and manual access to the paths:
 

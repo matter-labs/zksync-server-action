@@ -15,7 +15,7 @@ jobs:
         with:
           version: v1.3.4
 
-      - name: Run action (latest stable)
+      - name: Run action
         uses: ./
         with:
           version: latest
