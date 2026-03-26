@@ -27,7 +27,7 @@ Example setup:
 - name: Setup Foundry
   uses: foundry-rs/foundry-toolchain@v1
   with:
-    version: v1.4.1
+    version: v1.5.1
 ```
 
 ### Minimal usage (single chain, latest stable)

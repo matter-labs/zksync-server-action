@@ -34,7 +34,7 @@ jobs:
       - name: Install Foundry (anvil)
         uses: foundry-rs/foundry-toolchain@50d5a8956f2e319df19e6b57539d7e2acb9f8c1e # v1.5
         with:
-          version: v1.3.4
+          version: v1.5.1
 
       - name: Run action
         uses: ./
