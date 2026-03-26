@@ -31,7 +31,7 @@ jobs:
       - name: Run license checker
         run: |
           license-checker --production \
-            --onlyAllow "MIT;Apache-2.0" \
+            --onlyAllow "MIT;Apache-2.0;ISC" \
             --summary
 
   # Special job that allows some of the jobs to be skipped or failed

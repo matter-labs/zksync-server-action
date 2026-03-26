@@ -94,7 +94,7 @@ export function getInputs(): ActionInputs {
     l1Port: parseInteger("l1_port", readInput("l1_port", "8545")),
     l2Port: parseInteger("l2_port", readInput("l2_port", "3050")),
     linuxArch: parseLinuxArch(readInput("linux_arch", "x86_64").trim() || "x86_64"),
-    protocolVersion: readInput("protocol_version", "v31.0").trim() || "v31.0",
+    protocolVersion: readInput("protocol_version", "v30.2").trim() || "v30.2",
     setup,
     l2PortsRaw,
     l2Ports,

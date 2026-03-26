@@ -21,8 +21,8 @@ inputs:
     description: Linux arch (x86_64 or aarch64)
     default: x86_64
   protocol_version:
-    description: Protocol version inside local-chains (e.g. v31.0)
-    default: v31.0
+    description: Protocol version inside local-chains (e.g. v30.2)
+    default: v30.2
   setup:
     description: 'Setup type: ''single_chain'' or ''multi_chain'''
     default: 'single_chain'

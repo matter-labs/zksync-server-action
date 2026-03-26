@@ -97,7 +97,7 @@ To start only a subset of chains, or use custom ports, override `l2_ports`:
 | `l1_port`            | `8545`                         | L1 RPC port (Anvil)                                                         |
 | `l2_port`            | `3050`                         | L2 RPC port — **single_chain only**                                         |
 | `linux_arch`         | `x86_64`                       | Architecture for binary (`x86_64` or `aarch64`)                             |
-| `protocol_version`   | `v31.0`                        | Protocol folder under `local-chains` (e.g. `v30.2`, `v31.0`)               |
+| `protocol_version`   | `v30.2`                        | Protocol folder under `local-chains` (e.g. `v30.2`, `v31.0`)               |
 | `setup`              | `single_chain`                 | Setup type: `single_chain` or `multi_chain`                                 |
 | `l2_ports`           | `6565: 3050` / `6566: 3051`    | Chain ID → port map — **multi_chain only** (one entry per line)             |
 | `set_env`            | `true`                         | Export RPC URLs to `GITHUB_ENV`                                             |
