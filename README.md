@@ -2,6 +2,8 @@
 
 Start a local **L1 (Anvil)** and **L2 (zksync_os_server)** directly from official [`matter-labs/zksync-os-server`](https://github.com/matter-labs/zksync-os-server) release assets.
 
+This action is implemented as a **Node 20 TypeScript action** with a committed `dist/` bundle, while preserving the same public inputs and outputs as the earlier composite version.
+
 ## Features
 
 - Downloads official binaries + `local-chains.tar.gz`
@@ -9,6 +11,7 @@ Start a local **L1 (Anvil)** and **L2 (zksync_os_server)** directly from officia
 - Falls back to legacy assets for older tags that do not include `local-chains.tar.gz`
 - Supports **single-chain** and **multi-chain** setups
 - Boots both **L1 (Anvil)** and one or more **L2 (zksync_os_server)** instances
+- Prints inline logs at the end of the action when `anvil_logs: true` and `zksync_logs: true`
 - Exports `ETH_RPC` and `ZKSYNC_RPC` (single chain) or `ZKSYNC_RPC_<chain_id>` (multi chain) for your subsequent test steps
 
 ## Quick Start
@@ -31,7 +34,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     protocol_version: v31.0
@@ -41,7 +44,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: v0.8.2
     l1_port: 8545
@@ -52,7 +55,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     include_prerelease: true
@@ -64,7 +67,7 @@ Starts one `zksync-os-server` instance per chain listed in `l2_ports`, all shari
 
 ```yaml
 - name: Run ZKsync OS (multi chain)
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     protocol_version: v31.0
@@ -78,7 +81,7 @@ To start only a subset of chains, or use custom ports, override `l2_ports`:
 
 ```yaml
 - name: Run ZKsync OS (multi chain, custom)
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     setup: multi_chain
     l2_ports: |
@@ -136,7 +139,7 @@ You may configure the server in one of two ways:
 Example:
 
 ```yaml
-- uses: dutterbutter/zksync-server-action@vX
+- uses: matter-labs/zksync-server-action@vX
   with:
     config_yaml: |
       genesis:
@@ -162,7 +165,7 @@ If `config_yaml` is **not** provided, the action uses the protocol default confi
 These are typically passed from GitHub Secrets:
 
 ```yaml
-- uses: dutterbutter/zksync-server-action@vX
+- uses: matter-labs/zksync-server-action@vX
   with:
     operator_commit_sk: ${{ secrets.OPERATOR_COMMIT_SK }}
     operator_prove_sk:  ${{ secrets.OPERATOR_PROVE_SK }}
@@ -229,7 +232,7 @@ Example with both inline printing and manual access to the paths:
 ```yaml
 - name: Run ZKsync OS
   id: zks
-  uses: dutterbutter/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.0
   with:
     version: latest
     anvil_logs: true
@@ -246,7 +249,19 @@ Example with both inline printing and manual access to the paths:
 
 ### Support
 
-If you encounter issues not covered in the troubleshooting section, feel free to [open an issue](https://github.com/dutterbutter/zksync-server-action/issues) in the repository.
+If you encounter issues not covered in the troubleshooting section, feel free to [open an issue](https://github.com/matter-labs/zksync-server-action/issues) in the repository.
+
+## Development
+
+For local maintenance of the action bundle:
+
+```bash
+npm ci
+npm run typecheck
+npm run build
+```
+
+The committed `dist/index.js` should stay in sync with `src/`.
 
 ## Contributing 🤝
 
