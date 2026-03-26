@@ -1,210 +1,72 @@
-name: "ZKsync Server Action (L1 + L2)"
-description: "Starts Anvil (L1) and ZKsync OS server (L2) for L1-L2 testing"
-author: "dutterbutter"
+name: ZKsync Server Action (L1 + L2)
+description: Starts Anvil (L1) and ZKsync OS server (L2) for L1-L2 testing
+author: matter-labs
 branding:
-  icon: "server"
-  color: "blue"
-
+  icon: server
+  color: blue
 inputs:
   version:
-    description: "Release tag (e.g. v0.8.2) or 'latest'"
-    default: "latest"
+    description: Release tag (e.g. v0.8.2) or 'latest'
+    default: latest
   include_prerelease:
-    description: "Allow pre-releases when version is 'latest'"
-    default: "false"
+    description: Allow pre-releases when version is 'latest'
+    default: 'false'
   l1_port:
-    description: "L1 (Anvil) RPC port"
-    default: "8545"
+    description: L1 (Anvil) RPC port
+    default: '8545'
   l2_port:
-    description: "L2 (ZKsync OS) RPC port"
-    default: "3050"
+    description: L2 (ZKsync OS) RPC port (single_chain only)
+    default: '3050'
   linux_arch:
-    description: "Linux arch (x86_64 or aarch64)"
-    default: "x86_64"
+    description: Linux arch (x86_64 or aarch64)
+    default: x86_64
+  protocol_version:
+    description: Protocol version inside local-chains (e.g. v30.2)
+    default: v30.2
+  setup:
+    description: 'Setup type: ''single_chain'' or ''multi_chain'''
+    default: 'single_chain'
+  l2_ports:
+    description: |
+      Chain ID to RPC port map for multi_chain setup (one entry per line, format: "<chain_id>: <port>").
+    default: |
+      6565: 3050
+      6566: 3051
   set_env:
-    description: "If 'true', export ETH_RPC and ZKSYNC_RPC to GITHUB_ENV"
-    default: "true"
+    description: 'If ''true'', export ETH_RPC and ZKSYNC_RPC to GITHUB_ENV'
+    default: 'true'
   boot_grace_seconds:
-    description: "Seconds to wait after starting each server before moving on"
-    default: "3"
+    description: Seconds to wait after starting each server before moving on
+    default: '3'
   anvil_logs:
-    description: "If 'true', print Anvil log at the end"
-    default: "false"
+    description: 'If ''true'', print Anvil log at the end'
+    default: 'false'
   zksync_logs:
-    description: "If 'true', print zksync-os-server log at the end"
-    default: "false"
-
+    description: 'If ''true'', print zksync-os-server log at the end'
+    default: 'false'
+  config_yaml:
+    description: Optional YAML config for zksync-os-server (overrides defaults, single_chain only).
+    required: false
+  operator_commit_sk:
+    description: Override l1_sender.operator_commit_sk (single_chain only)
+    required: false
+  operator_prove_sk:
+    description: Override l1_sender.operator_prove_sk (single_chain only)
+    required: false
+  operator_execute_sk:
+    description: Override l1_sender.operator_execute_sk (single_chain only)
+    required: false
 outputs:
   l1_rpc_url:
-    description: "Resolved L1 RPC URL"
-    value: ${{ steps.vars.outputs.l1 }}
+    description: Resolved L1 RPC URL
   l2_rpc_url:
-    description: "Resolved L2 RPC URL"
-    value: ${{ steps.vars.outputs.l2 }}
+    description: Resolved L2 RPC URL (single_chain; first chain port in multi_chain)
   resolved_version:
-    description: "Resolved tag actually used (e.g. v0.8.2)"
-    value: ${{ steps.resolve.outputs.tag }}
+    description: Resolved tag actually used
   anvil_log_path:
-    description: "Path to the Anvil log file"
-    value: ${{ steps.vars.outputs.anvil_log }}
+    description: Path to the Anvil log file
   zksync_log_path:
-    description: "Path to the zksync-os-server log file"
-    value: ${{ steps.vars.outputs.zksync_log }}
-
+    description: Path to the zksync-os-server log file (single_chain only)
 runs:
-  using: "composite"
-  steps:
-    - id: vars
-      shell: bash
-      run: |
-        echo "l1=http://127.0.0.1:${{ inputs.l1_port }}" >> "$GITHUB_OUTPUT"
-        echo "l2=http://127.0.0.1:${{ inputs.l2_port }}" >> "$GITHUB_OUTPUT"
-        echo "anvil_log=.zks/anvil.log" >> "$GITHUB_OUTPUT"
-        echo "zksync_log=.zks/zksyncos.log" >> "$GITHUB_OUTPUT"
-
-    - id: resolve
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-      with:
-        github-token: ${{ github.token }}
-        script: |
-          const owner = 'matter-labs';
-          const repo  = 'zksync-os-server';
-
-          const version = core.getInput('version')?.trim() || 'latest';
-          const includePre = (core.getInput('include_prerelease') || 'false').toLowerCase() === 'true';
-
-          let tag = version;
-
-          async function latestStable() {
-            const res = await github.rest.repos.getLatestRelease({ owner, repo });
-            return res.data.tag_name;
-          }
-
-          async function latestIncludingPrerelease() {
-            const releases = await github.paginate(github.rest.repos.listReleases, {
-              owner, repo, per_page: 20,
-            });
-            const rel = releases.find(r => !r.draft);
-            if (!rel) throw new Error(`No releases found for ${owner}/${repo}`);
-            return rel.tag_name;
-          }
-
-          try {
-            if (version === 'latest') {
-              tag = includePre ? await latestIncludingPrerelease() : await latestStable();
-            }
-            core.info(`Resolved zksync-os-server tag: ${tag}`);
-            core.setOutput('tag', tag);
-            core.setOutput('base', `https://github.com/${owner}/${repo}/releases/download/${tag}`);
-          } catch (err) {
-            core.setFailed(`Failed to resolve release tag for ${owner}/${repo}: ${err.message || err}`);
-          }
-
-    - name: Download release assets
-      shell: bash
-      run: |
-        set -euo pipefail
-        mkdir -p .zks && cd .zks
-        base="${{ steps.resolve.outputs.base }}"
-        tag="${{ steps.resolve.outputs.tag }}"
-        arch="${{ inputs.linux_arch }}"
-        tgz="zksync-os-server-${tag}-${arch}-unknown-linux-gnu.tar.gz"
-
-        echo "Resolved tag: $tag"
-        echo "Downloading assets from: $base"
-        curl -fL --retry 5 --retry-all-errors -o "$tgz" "$base/$tgz"
-        curl -fL --retry 5 --retry-all-errors -O "$base/zkos-l1-state.json"
-        curl -fL --retry 5 --retry-all-errors -O "$base/genesis.json"
-        mkdir -p genesis
-        mv -f genesis.json genesis/genesis.json
-
-        echo "Listing archive contents:"
-        tar -tzf "$tgz" | sed -n '1,200p'
-
-        tar -xzf "$tgz"
-
-        if [[ ! -f ./zksync-os-server ]]; then
-          echo "ERROR: expected ./zksync-os-server in the archive but didn't find it."
-          find . -maxdepth 2 -type f -print
-          exit 1
-        fi
-
-        chmod +x ./zksync-os-server
-        echo "Binary ready: ./zksync-os-server"
-
-    - name: Start Anvil (L1)
-      shell: bash
-      run: |
-        set -euo pipefail
-        cd .zks
-        echo "Launching anvil fully detached on :${{ inputs.l1_port }}..."
-        nohup anvil --load-state zkos-l1-state.json --port ${{ inputs.l1_port }} > anvil.log 2>&1 < /dev/null &
-        echo $! > anvil.pid
-        sleep "${{ inputs.boot_grace_seconds }}"
-        if ! kill -0 "$(cat anvil.pid)" 2>/dev/null; then
-          echo "Anvil exited during initial grace. Dumping anvil.log:"
-          sed -n '1,200p' anvil.log || true
-          exit 1
-        fi
-        disown || true
-        echo "Anvil launched (pid: $(cat anvil.pid))."
-
-    - name: Start ZKsync OS server (L2)
-      shell: bash
-      run: |
-        set -euo pipefail
-        cd .zks
-        export L1_RPC="http://127.0.0.1:${{ inputs.l1_port }}"
-        export GENESIS="$(pwd)/genesis/genesis.json"
-        export PORT="${{ inputs.l2_port }}"
-        export RUST_LOG=info
-
-        echo "Launching zksync-os-server fully detached on :${{ inputs.l2_port }}..."
-        setsid bash -c 'exec ./zksync-os-server </dev/null >>zksyncos.log 2>&1' &
-        echo $! > l2.pid
-        sleep "${{ inputs.boot_grace_seconds }}"
-        if ! kill -0 "$(cat l2.pid)" 2>/dev/null; then
-          echo "zksync-os-server exited during initial grace. Dumping zksyncos.log:"
-          sed -n '1,200p' zksyncos.log || true
-          exit 1
-        fi
-        disown || true
-        echo "ZKsync OS launched (pid: $(cat l2.pid))."
-
-    - name: Export RPC URLs
-      if: ${{ inputs.set_env == 'true' }}
-      shell: bash
-      run: |
-        echo "ETH_RPC=${{ steps.vars.outputs.l1 }}" >> "$GITHUB_ENV"
-        echo "ZKSYNC_RPC=${{ steps.vars.outputs.l2 }}" >> "$GITHUB_ENV"
-
-    - name: Print endpoints
-      shell: bash
-      run: |
-        echo "ETH_RPC=${{ steps.vars.outputs.l1 }}"
-        echo "ZKSYNC_RPC=${{ steps.vars.outputs.l2 }}"
-        echo "RESOLVED_ZKSYNC_VERSION=${{ steps.resolve.outputs.tag }}"
-
-    - name: Print Anvil log
-      if: ${{ inputs.anvil_logs == 'true' }}
-      shell: bash
-      run: |
-        echo "::group::.zks/anvil.log"
-        if [[ -f "${{ steps.vars.outputs.anvil_log }}" ]]; then
-          cat "${{ steps.vars.outputs.anvil_log }}"
-        else
-          echo "Anvil log not found at ${{ steps.vars.outputs.anvil_log }}"
-        fi
-        echo "::endgroup::"
-
-    - name: Print zksync-os-server log
-      if: ${{ inputs.zksync_logs == 'true' }}
-      shell: bash
-      run: |
-        echo "::group::.zks/zksyncos.log"
-        if [[ -f "${{ steps.vars.outputs.zksync_log }}" ]]; then
-          cat "${{ steps.vars.outputs.zksync_log }}"
-        else
-          echo "zksync-os-server log not found at ${{ steps.vars.outputs.zksync_log }}"
-        fi
-        echo "::endgroup::"
+  using: node24
+  main: dist/index.js
