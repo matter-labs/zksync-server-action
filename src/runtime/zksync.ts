@@ -19,10 +19,21 @@ function runtimeEnv(inputs: ActionInputs): NodeJS.ProcessEnv {
   };
 }
 
-async function foregroundRun(binaryPath: string, configPath: string, env: NodeJS.ProcessEnv): Promise<void> {
+async function getLocalDevConfig(zksDir: string): Promise<string | undefined> {
+  const localDevPath = path.join(zksDir, "local-chains", "local_dev.yaml");
+  const stat = await fs.stat(localDevPath).catch(() => undefined);
+  return stat?.isFile() ? localDevPath : undefined;
+}
+
+function buildConfigArgs(configPath: string, localDevPath?: string): string[] {
+  const configValue = localDevPath ? `${localDevPath}:${configPath}` : configPath;
+  return ["--config", configValue];
+}
+
+async function foregroundRun(binaryPath: string, configArgs: string[], env: NodeJS.ProcessEnv): Promise<void> {
   core.startGroup("try foreground run to capture error");
   try {
-    const result = await runCommand(binaryPath, ["--config", configPath], {
+    const result = await runCommand(binaryPath, configArgs, {
       env,
       allowNonZeroExit: true,
     });
@@ -60,11 +71,14 @@ export async function startSingleChainZksync(
     PORT: String(inputs.l2Port),
   };
 
-  core.info(`Launching: ${context.downloadedBinaryPath} --config ${resolvedConfig.path}`);
+  const localDevConfig = await getLocalDevConfig(context.zksDir);
+  const configArgs = buildConfigArgs(resolvedConfig.path, localDevConfig);
+
+  core.info(`Launching: ${context.downloadedBinaryPath} ${configArgs.join(" ")}`);
 
   const pid = await spawnDetached(
     context.downloadedBinaryPath!,
-    ["--config", resolvedConfig.path],
+    configArgs,
     {
       cwd: context.zksDir,
       env,
@@ -77,7 +91,7 @@ export async function startSingleChainZksync(
 
   if (!isProcessAlive(pid)) {
     await tailLogFile("zksync-os-server exited early", context.zksyncLogPath);
-    await foregroundRun(context.downloadedBinaryPath!, resolvedConfig.path, env);
+    await foregroundRun(context.downloadedBinaryPath!, configArgs, env);
     throw new ActionError(`zksync-os-server exited early (pid ${pid}).`);
   }
 
@@ -101,6 +115,7 @@ export async function startMultiChainZksync(
   }
 
   const env = runtimeEnv(inputs);
+  const localDevConfig = await getLocalDevConfig(context.zksDir);
 
   for (const mapping of sortedPorts(inputs.l2Ports)) {
     const configFile = path.join(multiDir, `chain_${mapping.chainId}.yaml`);
@@ -109,9 +124,10 @@ export async function startMultiChainZksync(
       throw new ActionError(`Config file not found for chain ${mapping.chainId}: ${configFile}`);
     }
 
+    const configArgs = buildConfigArgs(configFile, localDevConfig);
     const logFile = path.join(context.zksDir, `zksyncos_${mapping.chainId}.log`);
-    core.info(`Starting chain ${mapping.chainId} with config: ${configFile}`);
-    await spawnDetached(context.downloadedBinaryPath!, ["--config", configFile], {
+    core.info(`Starting chain ${mapping.chainId}: ${configArgs.join(" ")}`);
+    await spawnDetached(context.downloadedBinaryPath!, configArgs, {
       cwd: context.zksDir,
       env,
       logPath: logFile,
