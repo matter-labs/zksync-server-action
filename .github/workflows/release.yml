@@ -48,11 +48,7 @@ jobs:
         run: npm run build
 
       - name: Verify committed dist
-        run: |
-          if [[ -n "$(git status --short -- dist)" ]]; then
-            git status --short -- dist
-            exit 1
-          fi
+        run: npm run verify-dist
 
       - name: Determine tag
         id: tag
