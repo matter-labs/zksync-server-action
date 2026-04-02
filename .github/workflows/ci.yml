@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  self-test:
+  verify-dist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -25,11 +25,13 @@ jobs:
         run: npm run build
 
       - name: Verify committed dist
-        run: |
-          if [[ -n "$(git status --short -- dist)" ]]; then
-            git status --short -- dist
-            exit 1
-          fi
+        run: npm run verify-dist
+
+  self-test:
+    needs: verify-dist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       - name: Install Foundry (anvil)
         uses: foundry-rs/foundry-toolchain@50d5a8956f2e319df19e6b57539d7e2acb9f8c1e # v1.5

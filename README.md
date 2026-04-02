@@ -34,7 +34,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     version: latest
     protocol_version: v31.0
@@ -44,7 +44,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     version: v0.8.2
     l1_port: 8545
@@ -55,7 +55,7 @@ Example setup:
 
 ```yaml
 - name: Run ZKsync OS
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     version: latest
     include_prerelease: true
@@ -67,7 +67,7 @@ Starts one `zksync-os-server` instance per chain listed in `l2_ports`, all shari
 
 ```yaml
 - name: Run ZKsync OS (multi chain)
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     version: latest
     protocol_version: v31.0
@@ -81,7 +81,7 @@ To start only a subset of chains, or use custom ports, override `l2_ports`:
 
 ```yaml
 - name: Run ZKsync OS (multi chain, custom)
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     setup: multi_chain
     l2_ports: |
@@ -232,7 +232,7 @@ Example with both inline printing and manual access to the paths:
 ```yaml
 - name: Run ZKsync OS
   id: zks
-  uses: matter-labs/zksync-server-action@v0.1.0
+  uses: matter-labs/zksync-server-action@v0.1.2
   with:
     version: latest
     anvil_logs: true
