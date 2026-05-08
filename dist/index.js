@@ -47801,6 +47801,7 @@ async function resolveRelease(inputs) {
 
 
 const DEFAULT_L2_PORTS = "6565: 3050\n6566: 3051";
+const DEFAULT_ANVIL_EXTRA_ARGS = "--block-time 0.25 --mixed-mining --slots-in-an-epoch 10";
 function readInput(name, fallback) {
     const value = getInput(name, { trimWhitespace: false });
     if (value !== "") {
@@ -47880,6 +47881,7 @@ function getInputs() {
         bootGraceSeconds: parseInteger("boot_grace_seconds", readInput("boot_grace_seconds", "3")),
         anvilLogs: parseBoolean("anvil_logs", readInput("anvil_logs", "false")),
         zksyncLogs: parseBoolean("zksync_logs", readInput("zksync_logs", "false")),
+        anvilExtraArgs: readInput("anvil_extra_args", DEFAULT_ANVIL_EXTRA_ARGS).trim().split(/\s+/).filter(Boolean),
         configYaml: optionalInput("config_yaml"),
         operatorCommitSk: optionalInput("operator_commit_sk"),
         operatorProveSk: optionalInput("operator_prove_sk"),
@@ -49001,7 +49003,7 @@ async function startAnvil(inputs, context) {
     const statePath = await resolveStateFile(inputs, context);
     const stateAbsPath = external_node_path_namespaceObject.resolve(statePath);
     info(`Starting anvil with --load-state ${stateAbsPath}`);
-    const pid = await spawnDetached(anvilPath, ["--load-state", stateAbsPath, "--port", String(inputs.l1Port)], {
+    const pid = await spawnDetached(anvilPath, ["--load-state", stateAbsPath, "--port", String(inputs.l1Port), ...inputs.anvilExtraArgs], {
         cwd: context.zksDir,
         env: process.env,
         logPath: context.anvilLogPath,
