@@ -66,7 +66,7 @@ export async function startAnvil(
   const stateAbsPath = path.resolve(statePath);
   core.info(`Starting anvil with --load-state ${stateAbsPath}`);
 
-  const pid = await spawnDetached(anvilPath, ["--load-state", stateAbsPath, "--port", String(inputs.l1Port)], {
+  const pid = await spawnDetached(anvilPath, ["--load-state", stateAbsPath, "--port", String(inputs.l1Port), ...inputs.anvilExtraArgs], {
     cwd: context.zksDir,
     env: process.env,
     logPath: context.anvilLogPath,

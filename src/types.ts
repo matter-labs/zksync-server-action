@@ -20,6 +20,7 @@ export interface ActionInputs {
   bootGraceSeconds: number;
   anvilLogs: boolean;
   zksyncLogs: boolean;
+  anvilExtraArgs: string[];
   configYaml?: string;
   operatorCommitSk?: string;
   operatorProveSk?: string;

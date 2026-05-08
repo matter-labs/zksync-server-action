@@ -38,6 +38,9 @@ inputs:
   boot_grace_seconds:
     description: Seconds to wait after starting each server before moving on
     default: '3'
+  anvil_extra_args:
+    description: Extra CLI flags passed to Anvil (space-separated). Override to replace the defaults entirely.
+    default: '--block-time 0.25 --mixed-mining --slots-in-an-epoch 10'
   anvil_logs:
     description: 'If ''true'', print Anvil log at the end'
     default: 'false'
